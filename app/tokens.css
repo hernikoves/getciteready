@@ -1,0 +1,48 @@
+/* CiteReady tokens */
+:root {
+  --ink: #161411;
+  --ink-soft: #3A352E;
+  --muted: #6A6358;
+  --paper: #F4F0E8;
+  --paper-2: #EBE6DC;
+  --surface: #FCFAF6;
+  --rule: #D9D2C5;
+  --cite: #C24A1A;
+  --cite-hover: #A33C14;
+  --cite-ink: #FFFFFF;
+  --ready: #1F5C4A;
+  --upcoming-bg: #EFEBE3;
+  --focus: #C24A1A;
+  --danger: #9B2C2C;
+  --ok: #1F5C4A;
+  --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --fs-kicker: 0.75rem;
+  --fs-small: 0.8125rem;
+  --fs-body: 1.0625rem;
+  --fs-h3: 1.125rem;
+  --fs-h2: 1.75rem;
+  --fs-h1: clamp(2.25rem, 4.5vw, 3.25rem);
+  --lh-tight: 1.15;
+  --lh-body: 1.55;
+  --tracking-kicker: 0.12em;
+  --tracking-display: -0.03em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+  --shadow-card: 0 1px 0 rgba(22,20,17,0.06), 0 12px 32px rgba(22,20,17,0.06);
+  --header-h: 64px;
+  --max: 1080px;
+  --prose: 40rem;
+  --ease: 160ms ease;
+}
