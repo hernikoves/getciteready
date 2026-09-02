@@ -124,6 +124,18 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
     return () => clearInterval(id);
   }, [status, attempt]);
 
+  function adoptJobId(nextId: string) {
+    setActiveId(nextId);
+    const u = new URL(window.location.href);
+    u.searchParams.set("job", nextId);
+    u.hash = "generate";
+    window.history.replaceState(
+      null,
+      "",
+      `${u.pathname}${u.search}${u.hash}`,
+    );
+  }
+
   async function retrySameUrl() {
     setServerError(false);
     setJob((prev) => ({ ...prev, status: "submitting" }));
@@ -133,6 +145,29 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
     const body = JSON.stringify(payload);
     const headers = { "Content-Type": "application/json" };
     try {
+      if (job.paid === false) {
+        const preview = await fetch("/api/preview", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ url: job.url || "" }),
+        });
+        if (preview.status >= 500) {
+          setServerError(true);
+          setJob((prev) => ({ ...prev, status: "timeout" }));
+          return;
+        }
+        if (!preview.ok) {
+          setServerError(true);
+          setJob((prev) => ({ ...prev, status: "timeout" }));
+          return;
+        }
+        const data = (await preview.json()) as JobJson;
+        if (typeof data.jobId === "string" && data.jobId) {
+          adoptJobId(data.jobId);
+        }
+        setJob((prev) => applyPayload(prev, { ...data, paid: false }));
+        return;
+      }
       const retry = await fetch(
         `/api/job/${encodeURIComponent(activeId)}/retry`,
         { method: "POST", headers, body },
@@ -155,15 +190,7 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
       }
       const data = (await gen.json()) as JobJson;
       if (typeof data.jobId === "string" && data.jobId) {
-        setActiveId(data.jobId);
-        const u = new URL(window.location.href);
-        u.searchParams.set("job", data.jobId);
-        u.hash = "generate";
-        window.history.replaceState(
-          null,
-          "",
-          `${u.pathname}${u.search}${u.hash}`,
-        );
+        adoptJobId(data.jobId);
       }
       setJob((prev) => applyPayload(prev, data));
     } catch {
@@ -171,6 +198,7 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
       setJob((prev) => ({ ...prev, status: "timeout" }));
     }
   }
+
 
   async function payCheckout() {
     const url = job.url;
@@ -185,7 +213,8 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
   }
 
   const paid = job.paid !== false;
-  const view = viewFor(status, job, serverError, paid);
+  const zipHref = `/api/job/${encodeURIComponent(activeId)}/zip`;
+  const view = viewFor(status, job, serverError, paid, zipHref);
   const live =
     view.role === "status" ? ("polite" as const) : undefined;
 
@@ -274,6 +303,7 @@ function viewFor(
   job: JobJson,
   serverError: boolean,
   paid: boolean,
+  zipHref: string,
 ): {
   role: "status" | "alert";
   kicker: string;
@@ -296,6 +326,21 @@ function viewFor(
     };
   }
   if (status === "success") {
+    if (!paid) {
+      return {
+        role: "status",
+        kicker: "Sent",
+        kickerClass: "ok",
+        title: "Pack is on its way",
+        body: "Preview includes gaps.md and 2 grounded Q&As. Checkout for $19 to generate this pack.",
+        primary: { type: "stripe", label: "Generate my pack — $19" },
+        secondary: {
+          type: "link",
+          label: "Download the sample pack",
+          href: zipHref,
+        },
+      };
+    }
     return {
       role: "status",
       kicker: "Sent",
