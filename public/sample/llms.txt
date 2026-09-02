@@ -1,3 +1,0 @@
-# CiteReady
-
-> Paste a URL. Get the files AI search can actually quote. CiteReady is an implementation pack, not a tracker.
