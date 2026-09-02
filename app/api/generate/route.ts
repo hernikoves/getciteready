@@ -1,9 +1,10 @@
-import { fetchPage, HttpError } from "@/lib/fetch-page";
-import { buildPackZip } from "@/lib/pack";
-import { toArrayBuffer } from "@/lib/zip-store";
+import { after } from "next/server";
+import { createJob, upsertJob, publicJob } from "@/lib/jobs";
+import { runJob } from "@/lib/run-job";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 function jsonError(status: number, error: string) {
   return Response.json({ error }, { status });
@@ -19,29 +20,16 @@ export async function POST(req: Request) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return jsonError(400, "invalid json");
   }
-  const url = (body as { url?: unknown }).url;
-  if (typeof url !== "string" || !url.trim()) {
-    return jsonError(400, "url is required");
-  }
+  const rec = body as { url?: unknown; jobId?: unknown };
+  const url = typeof rec.url === "string" ? rec.url.trim() : "";
+  const jobId = typeof rec.jobId === "string" ? rec.jobId.trim() : "";
+  if (!url) return jsonError(400, "url is required");
 
-  try {
-    const page = await fetchPage(url.trim());
-    if (!page.pageText.trim()) {
-      return jsonError(422, "empty PAGE_TEXT (SPA/out of scope)");
-    }
-    const zip = await buildPackZip(page);
-    page.html = "";
-    return new Response(toArrayBuffer(zip), {
-      headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": 'attachment; filename="citeready.zip"',
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (err) {
-    if (err instanceof HttpError) {
-      return jsonError(err.status, err.message);
-    }
-    return jsonError(500, "generate failed");
-  }
+  const job = jobId ? upsertJob(jobId, url, true) : createJob(url, true);
+  after(() => runJob(job.id));
+  return Response.json({
+    jobId: job.id,
+    id: job.id,
+    ...publicJob(job),
+  });
 }

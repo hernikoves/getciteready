@@ -47,6 +47,28 @@ export function getJob(id: string): Job | undefined {
   return store().get(id);
 }
 
+export function upsertJob(id: string, url: string, paid = true): Job {
+  const existing = store().get(id);
+  if (existing) {
+    existing.url = url;
+    existing.paid = paid;
+    existing.status = "submitting";
+    existing.error = undefined;
+    existing.zip = undefined;
+    store().set(id, existing);
+    return existing;
+  }
+  const job: Job = {
+    id,
+    status: "submitting",
+    url,
+    paid,
+    createdAt: Date.now(),
+  };
+  store().set(id, job);
+  return job;
+}
+
 export function patchJob(id: string, patch: Partial<Job>): Job | undefined {
   const job = store().get(id);
   if (!job) return undefined;
