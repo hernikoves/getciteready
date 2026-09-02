@@ -19,6 +19,14 @@ function prune(now: number): void {
   }
 }
 
+/** True if this IP is already at the daily cap (does not consume). */
+export function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  prune(now);
+  const prev = hits.get(utcDayKey(ip, now)) || [];
+  return prev.length >= MAX;
+}
+
 /**
  * Consume one preview slot. Returns true if the request is blocked
  * (already 3 today — 4th is rate_limit, no fetch).
