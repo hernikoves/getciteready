@@ -1,0 +1,62 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does CiteReady get me cited in ChatGPT?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No tool can promise that. CiteReady makes a public page easier to quote: structure, FAQs, and a clean index. Citations still depend on the model."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Google use llms.txt?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Google has said no AI system uses llms.txt directly. The file is a community spec from Jeremy Howard and Answer.AI. We still ship it because it is cheap to publish. The paid job is the schema and the grounded Q&A your developer can paste this afternoon."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is CiteReady an AI-visibility tracker?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Trackers measure whether ChatGPT mentioned you. CiteReady is an implementation pack: files you deploy, not a dashboard of prompts."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much does CiteReady cost?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "One-shot audit — $19 — one URL, zip by email, no account. Checkout today is the $19 one-shot only. Starter, Agency, and Studio are listed as upcoming plans."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you store my site?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We fetch one public URL. HTML is deleted within 24 hours. We keep the URL you typed and the email used for delivery."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What URLs work with CiteReady?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Public pages only. We honor robots.txt. We do not log in, scrape Maps, or connect a store."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if a generated answer would invent a price or feature?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That item is omitted. Every Q&A in the pack includes a verbatim quote from your HTML, or it does not ship."
+      }
+    }
+  ]
+}

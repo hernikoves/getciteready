@@ -1,0 +1,32 @@
+# CiteReady
+
+CiteReady is an implementation pack, not a tracker.
+
+Paste a URL. Get the files AI search can actually quote.
+
+In 60 seconds: a spec-compliant llms.txt, FAQ schema, and citation-ready answers taken from your own page — plus the questions models cannot answer from your HTML.
+
+We do not rank you in ChatGPT. We give you artifacts your developer can ship this afternoon.
+
+## How it works
+
+1. Paste a public URL.
+2. We fetch the HTML. No login, no pixel, no store connect.
+3. Download a zip. Paste the files into your CMS or head.
+4. Optional later: $29 per month to recrawl weekly when schema drifted. Not in the first version.
+
+## What is in the pack
+
+- llms.txt and llms-full.txt — a curated index, not a sitemap dump
+- FAQPage JSON-LD that matches visible content, with mismatch warnings
+- 5–8 Q&As with on-page quotes. If it is not on the page, the field stays blank.
+- gaps.md — claims a competitor can win because this page lacks numbers, dates, an author, or a one-sentence definition
+
+## Pricing
+
+- One-shot audit — $19 — one URL, zip by email, no account
+- Starter — $29/mo — 5 URLs, weekly recrawl
+- Agency — $79/mo — 25 URLs, white-label zip
+- Studio — $149/mo — 75 URLs, team folder
+
+Checkout today is the $19 one-shot only. Starter, Agency, and Studio are listed as upcoming plans. We do not collect a subscription in week one.
