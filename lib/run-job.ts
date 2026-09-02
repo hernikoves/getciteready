@@ -8,14 +8,16 @@ const JOB_MS = 12_000;
 export async function runJob(id: string): Promise<void> {
   const job = getJob(id);
   if (!job) return;
+  if (job.status === "rate_limit") return;
   patchJob(id, { status: "submitting", error: undefined, zip: undefined });
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), JOB_MS);
   try {
     const page = await fetchPage(job.url, ac.signal);
-    const zip = await buildPackZip(page);
+    const preview = job.paid === false;
+    const zip = await buildPackZip(page, preview ? { preview: true } : undefined);
     const email = job.email;
-    if (email) {
+    if (!preview && email) {
       await emailZip({ to: email, zip, url: job.url });
     }
     patchJob(id, {

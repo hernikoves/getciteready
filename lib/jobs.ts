@@ -48,6 +48,29 @@ export function createJob(url: string, paid = true, email?: string): Job {
   return job;
 }
 
+/** Unpaid job already over the free-preview cap. No fetch. */
+export function createRateLimitedJob(url: string, id?: string): Job {
+  const existing = id ? store().get(id) : undefined;
+  if (existing) {
+    existing.url = url;
+    existing.paid = false;
+    existing.status = "rate_limit";
+    existing.error = undefined;
+    existing.zip = undefined;
+    store().set(existing.id, existing);
+    return existing;
+  }
+  const job: Job = {
+    id: id || createJobId(),
+    status: "rate_limit",
+    url,
+    paid: false,
+    createdAt: Date.now(),
+  };
+  store().set(job.id, job);
+  return job;
+}
+
 export function getJob(id: string): Job | undefined {
   return store().get(id);
 }
