@@ -88,3 +88,9 @@ export function zipStore(files: Record<string, string>): Uint8Array {
   ]);
   return concat([localBlob, centralBlob, end]);
 }
+
+export function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const out = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(out).set(bytes);
+  return out;
+}
