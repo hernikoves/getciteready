@@ -10,6 +10,8 @@ export async function GET(
   const { id } = await ctx.params;
   const job = getJob(id);
   if (!job) {
+    // Stripe success_url uses ?job=<checkout_session_id> before a worker
+    // persists the job. Keep the panel in submitting.
     return Response.json({ status: "submitting", paid: true });
   }
   return Response.json(publicJob(job));
