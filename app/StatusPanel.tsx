@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { startCheckout } from "./start-checkout";
 
 export const STRIPE_PAY =
   "https://buy.stripe.com/test_3cI9AUg0v2X3eP2ba4dQQ00";
@@ -171,6 +172,18 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
     }
   }
 
+  async function payCheckout() {
+    const url = job.url;
+    if (url) {
+      const checkoutUrl = await startCheckout(url);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+        return;
+      }
+    }
+    window.location.href = STRIPE_PAY;
+  }
+
   const paid = job.paid !== false;
   const view = viewFor(status, job, serverError, paid);
   const live =
@@ -224,14 +237,13 @@ export default function StatusPanel({ jobId, onIdle }: Props) {
         </button>
       ) : null}
       {view.primary.type === "stripe" ? (
-        <form method="GET" action={STRIPE_PAY}>
-          {job.url ? (
-            <input type="hidden" name="url" value={job.url} />
-          ) : null}
-          <button className="btn" type="submit">
-            {view.primary.label}
-          </button>
-        </form>
+        <button
+          className="btn"
+          type="button"
+          onClick={() => void payCheckout()}
+        >
+          {view.primary.label}
+        </button>
       ) : null}
       {view.secondary?.type === "idle" ? (
         <button className="sec" type="button" onClick={onIdle}>
