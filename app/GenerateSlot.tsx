@@ -1,18 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import StatusPanel, { STRIPE_PAY } from "./StatusPanel";
+import StatusPanel from "./StatusPanel";
+import { startCheckout } from "./start-checkout";
 
 export function IdleForm() {
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const url = String(new FormData(form).get("url") ?? "").trim();
+    if (!url) return;
+    setBusy(true);
+    try {
+      const checkoutUrl = await startCheckout(url);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+        return;
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
-      <form
-        className="gen"
-        id="generate"
-        method="GET"
-        action={STRIPE_PAY}
-      >
+      <form className="gen" id="generate" onSubmit={onSubmit}>
         <label htmlFor="url">Public page URL</label>
         <input
           id="url"
@@ -26,7 +41,7 @@ export function IdleForm() {
         <p className="hint">
           Zip arrives by email after checkout. No account.
         </p>
-        <button className="btn" type="submit">
+        <button className="btn" type="submit" disabled={busy}>
           Generate my pack — $19
         </button>
       </form>

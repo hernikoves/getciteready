@@ -14,7 +14,7 @@ export async function runJob(id: string): Promise<void> {
   try {
     const page = await fetchPage(job.url, ac.signal);
     const zip = await buildPackZip(page);
-    const email = undefined as string | undefined;
+    const email = job.email;
     if (email) {
       await emailZip({ to: email, zip, url: job.url });
     }

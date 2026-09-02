@@ -13,6 +13,7 @@ export type Job = {
   status: JobStatus;
   url: string;
   paid: boolean;
+  email?: string;
   emailMasked?: string;
   error?: string;
   zip?: Uint8Array;
@@ -31,7 +32,7 @@ export function createJobId(): string {
   return crypto.randomUUID();
 }
 
-export function createJob(url: string, paid = true): Job {
+export function createJob(url: string, paid = true, email?: string): Job {
   const job: Job = {
     id: createJobId(),
     status: "submitting",
@@ -39,6 +40,10 @@ export function createJob(url: string, paid = true): Job {
     paid,
     createdAt: Date.now(),
   };
+  if (email) {
+    job.email = email;
+    job.emailMasked = maskEmail(email);
+  }
   store().set(job.id, job);
   return job;
 }
@@ -47,7 +52,12 @@ export function getJob(id: string): Job | undefined {
   return store().get(id);
 }
 
-export function upsertJob(id: string, url: string, paid = true): Job {
+export function upsertJob(
+  id: string,
+  url: string,
+  paid = true,
+  email?: string,
+): Job {
   const existing = store().get(id);
   if (existing) {
     existing.url = url;
@@ -55,6 +65,10 @@ export function upsertJob(id: string, url: string, paid = true): Job {
     existing.status = "submitting";
     existing.error = undefined;
     existing.zip = undefined;
+    if (email) {
+      existing.email = email;
+      existing.emailMasked = maskEmail(email);
+    }
     store().set(id, existing);
     return existing;
   }
@@ -65,6 +79,10 @@ export function upsertJob(id: string, url: string, paid = true): Job {
     paid,
     createdAt: Date.now(),
   };
+  if (email) {
+    job.email = email;
+    job.emailMasked = maskEmail(email);
+  }
   store().set(id, job);
   return job;
 }
