@@ -1,4 +1,5 @@
 import { SAMPLE_PACK } from "@/lib/sample-pack";
+import { LLMS_TXT } from "@/lib/sample-llms";
 import { zipStore } from "@/lib/zip-store";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 export function GET() {
-  const body = toArrayBuffer(zipStore(SAMPLE_PACK));
+  const body = toArrayBuffer(zipStore({ ...SAMPLE_PACK, "llms.txt": LLMS_TXT }));
   return new Response(body, {
     headers: {
       "Content-Type": "application/zip",
