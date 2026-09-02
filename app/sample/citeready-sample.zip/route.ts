@@ -16,7 +16,7 @@ export function GET() {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": 'attachment; filename="citeready-sample.zip"',
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "public, max-age=0, must-revalidate",
     },
   });
 }
