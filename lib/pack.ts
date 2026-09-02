@@ -36,7 +36,7 @@ function firstParagraph(pageText: string): string {
   return collapse(p).slice(0, 280);
 }
 
-function extractiveQAs(page: FetchedPage): QA[] {
+function extractiveQAs(page: FetchedPage, maxItems = 8): QA[] {
   const pageText = page.pageText;
   const out: QA[] = [];
   const seenQ = new Set<string>();
@@ -75,16 +75,17 @@ function extractiveQAs(page: FetchedPage): QA[] {
       const quote = sents[0] || (pageText.includes(ans.slice(0, 80)) ? collapse(ans).slice(0, 180) : "");
       if (quote) add(line, collapse(ans).slice(0, 400) || quote, quote);
     }
-    if (out.length >= 8) break;
+    if (out.length >= maxItems) break;
   }
 
-  if (out.length < 5) {
+  const fillTo = Math.min(5, maxItems);
+  if (out.length < fillTo) {
     const sents = sentences(pageText).slice(0, 24);
     if (sents[0]) {
       add(`What is ${page.title}?`, sents.slice(0, 2).join(" "), sents[0]);
     }
     for (const s of sents) {
-      if (out.length >= 8) break;
+      if (out.length >= maxItems) break;
       if (/\b(price|cost|pricing|\$|honor|robots|public|email|account|zip)\b/i.test(s)) {
         const q = /\?/.test(s)
           ? s
@@ -93,20 +94,21 @@ function extractiveQAs(page: FetchedPage): QA[] {
       }
     }
     for (const s of sents) {
-      if (out.length >= 5) break;
+      if (out.length >= fillTo) break;
       add(`What does ${page.title} state?`, s, s);
     }
   }
 
-  return out.slice(0, 8);
+  return out.slice(0, maxItems);
 }
 
-async function openaiQAs(pageText: string, title: string): Promise<QA[] | null> {
+async function openaiQAs(pageText: string, title: string, maxItems = 8): Promise<QA[] | null> {
   const openai = process.env.OPENAI_API_KEY;
   if (!openai) return null;
   const key = openai;
   const endpoint = "https://api.openai.com/v1/chat/completions";
 
+  const countHint = maxItems <= 2 ? "Exactly 2 items (preview)." : "5-8 items.";
   const clipped = pageText.slice(0, 24_000);
   const body = {
     model: "gpt-4o-mini",
@@ -116,7 +118,7 @@ async function openaiQAs(pageText: string, title: string): Promise<QA[] | null> 
       {
         role: "system",
         content:
-          'Return JSON {"items":[{"question":string,"answer":string,"quote":string}]}. 5-8 items. Each quote MUST be a verbatim substring of PAGE_TEXT. Never invent prices, features, dates, or names. If a fact is not in PAGE_TEXT, omit the item. Answers 2-4 sentences using only PAGE_TEXT.',
+          `Return JSON {"items":[{"question":string,"answer":string,"quote":string}]}. ${countHint} Each quote MUST be a verbatim substring of PAGE_TEXT. Never invent prices, features, dates, or names. If a fact is not in PAGE_TEXT, omit the item. Answers 2-4 sentences using only PAGE_TEXT.`,
       },
       {
         role: "user",
@@ -152,7 +154,7 @@ async function openaiQAs(pageText: string, title: string): Promise<QA[] | null> 
       const qa: QA = { question, answer, quote };
       if (quoteOk(pageText, qa)) qas.push(qa);
     }
-    return qas.length ? qas.slice(0, 8) : [];
+    return qas.length ? qas.slice(0, maxItems) : [];
   } catch {
     return null;
   }
@@ -278,11 +280,24 @@ Source URL: ${page.url.href}
 `;
 }
 
-export async function buildPackFiles(page: FetchedPage): Promise<Record<string, string>> {
-  let qas = extractiveQAs(page);
-  const ai = await openaiQAs(page.pageText, page.title);
+export type PackOptions = { preview?: boolean };
+
+export async function buildPackFiles(
+  page: FetchedPage,
+  opts?: PackOptions,
+): Promise<Record<string, string>> {
+  const preview = Boolean(opts?.preview);
+  const maxItems = preview ? 2 : 8;
+  let qas = extractiveQAs(page, maxItems);
+  const ai = await openaiQAs(page.pageText, page.title, maxItems);
   if (ai && ai.length) qas = ai;
-  if (qas.length > 8) qas = qas.slice(0, 8);
+  if (qas.length > maxItems) qas = qas.slice(0, maxItems);
+  if (preview) {
+    return {
+      "qa.md": buildQaMd(page, qas),
+      "gaps.md": buildGaps(page, qas),
+    };
+  }
   return {
     "llms.txt": buildLlmsTxt(page),
     "llms-full.txt": buildLlmsFull(page),
@@ -293,7 +308,10 @@ export async function buildPackFiles(page: FetchedPage): Promise<Record<string, 
   };
 }
 
-export async function buildPackZip(page: FetchedPage): Promise<Uint8Array> {
-  const files = await buildPackFiles(page);
+export async function buildPackZip(
+  page: FetchedPage,
+  opts?: PackOptions,
+): Promise<Uint8Array> {
+  const files = await buildPackFiles(page, opts);
   return zipStore(files);
 }
