@@ -26,7 +26,7 @@ function concat(parts: Uint8Array[]): Uint8Array {
   return out;
 }
 
-export function zipStore(files: Record<string, string>): Buffer {
+export function zipStore(files: Record<string, string>): Uint8Array {
   const encoder = new TextEncoder();
   const locals: Uint8Array[] = [];
   const centrals: Uint8Array[] = [];
@@ -86,5 +86,5 @@ export function zipStore(files: Record<string, string>): Buffer {
     u32(localBlob.length),
     u16(0),
   ]);
-  return Buffer.from(concat([localBlob, centralBlob, end]));
+  return concat([localBlob, centralBlob, end]);
 }
