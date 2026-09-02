@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { getJob, publicJob, upsertJob, maskEmail } from "@/lib/jobs";
+import { getJob, publicJob, upsertJob } from "@/lib/jobs";
 import { runJob } from "@/lib/run-job";
 import { getStripeClient } from "@/lib/stripe";
 
@@ -56,10 +56,6 @@ export async function GET(
 
     const email = sessionEmail(session);
     const job = upsertJob(id, url, true, email);
-    if (email) {
-      job.email = email;
-      job.emailMasked = maskEmail(email);
-    }
     after(() => runJob(id));
     return Response.json(publicJob(job));
   } catch {

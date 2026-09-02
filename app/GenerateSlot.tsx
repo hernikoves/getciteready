@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import StatusPanel from "./StatusPanel";
+import StatusPanel, { STRIPE_PAY } from "./StatusPanel";
 import { startCheckout } from "./start-checkout";
 
 export function IdleForm() {
@@ -16,10 +16,8 @@ export function IdleForm() {
     setBusy(true);
     try {
       const checkoutUrl = await startCheckout(url);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-        return;
-      }
+      window.location.href = checkoutUrl || STRIPE_PAY;
+      return;
     } finally {
       setBusy(false);
     }
